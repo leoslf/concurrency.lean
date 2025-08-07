@@ -1,0 +1,42 @@
+name: Lean Action CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  pages: write
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: leanprover/lean-action@v1
+    - name: Build docs
+      working-directory: docbuild
+      run: |
+        export LEAN_ABORT_ON_PANIC=1
+        # to ensure that the `--query` test below has a baseline to compare against.
+        rm -rf .lake/build/docs
+        lake build Concurrency:docs
+
+    - name: Upload static files as artifact
+      id: deployment
+      uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
+      with:
+        path: docbuild/.lake/build/doc/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

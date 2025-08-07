@@ -1,0 +1,11 @@
+name = "Concurrency"
+version = "0.0.1"
+defaultTargets = ["Concurrency"]
+testDriver = "concurrency_tests"
+
+[[lean_lib]]
+name = "Concurrency"
+
+[[lean_exe]]
+name = "concurrency_tests"
+root = "Tests.Main"
