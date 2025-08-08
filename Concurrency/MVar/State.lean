@@ -8,8 +8,8 @@ deriving Repr, DecidableEq, BEq
 namespace State
 
 def isEmpty : State a -> Bool
-| .empty => true
-| .full _ => false
+  | .empty => true
+  | .full _ => false
 
 @[simp, grind] theorem isEmpty_empty : @isEmpty a empty = true := rfl
 @[simp, grind] theorem isEmpty_full : isEmpty (full a) = false := rfl

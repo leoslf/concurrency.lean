@@ -12,6 +12,8 @@ structure MVar (a : Type) where
 
 namespace MVar
 
+variable {a : Type} [Inhabited a]
+
 def new (value : a) : BaseIO (MVar a) := do
   MVar.mk <$> Std.Condvar.new <*> Std.Condvar.new <*> Std.Mutex.new (.full value)
 
@@ -31,11 +33,11 @@ After a take, the MVar is left empty.
 Single-wakeup
 LIFO order
 -/
-def take (self : MVar a) : IO a := do
+def take (self : MVar a) : BaseIO a := do
   self.state.atomicallyOnce self.taking isFull do
     let .full result <- get
-      | throw $ IO.userError "impossible: State.isFull returned true on .empty"
-    let () <- set (State.empty : State a)
+      | unreachable!
+    set (State.empty : State a)
     self.putting.notifyOne
     return result
 
@@ -45,7 +47,7 @@ Put a value into the MVar.  If the MVar is currently full, put will wait until i
 Single-wakeup
 FIFO order
 -/
-def put (self : MVar a) (value : a) : IO Unit := do
+def put (self : MVar a) (value : a) : BaseIO Unit := do
   self.state.atomicallyOnce self.putting isEmpty do
     set $ State.full value
     self.taking.notifyOne
@@ -55,13 +57,13 @@ def read (self : MVar a) : IO a := do
   self.put result
   return result
 
-def read? (self : MVar a) : IO (Option a) := do
+def read? (self : MVar a) : BaseIO (Option a) := do
   self.state.atomicallyOnce self.taking (pure true) do
     let result? <- State.get? <$> get
     let _ <- self.taking.notifyOne
     return result?
 
-def replace (self : MVar a) (value : a) : IO Unit :=
+def replace (self : MVar a) (value : a) : BaseIO Unit :=
   self.take *> self.put value
 
 end MVar
