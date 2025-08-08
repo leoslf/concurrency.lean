@@ -30,7 +30,7 @@ def signal (self : Semaphore) : BaseIO Unit := do
     modify Nat.succ
     self.condition.notifyOne
 
-def bracket (self : Semaphore) (action : IO a) : IO a := do
+def bracket [Monad m] [MonadFinally m] [MonadLift BaseIO m] (self : Semaphore) (action : m a) : m a := do
   try
     self.wait
     action
