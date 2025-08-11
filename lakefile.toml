@@ -8,4 +8,4 @@ name = "Concurrency"
 
 [[lean_exe]]
 name = "concurrency_tests"
-root = "Tests.Main"
+root = "Test.Main"
